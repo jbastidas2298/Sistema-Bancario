@@ -1,0 +1,205 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(-135deg, #575aff 50%, #f1f1f1 50%);
+  padding: 20px;
+}
+
+.title-container {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.faculty-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.card-header {
+  text-align: center;
+  margin-bottom: 20px;
+
+  h3 {
+    margin: 0;
+    color: #575aff;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+}
+
+.card-content {
+  width: 100%;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: border-color 0.3s;
+
+  &:focus {
+    outline: none;
+    border-color: #575aff;
+    box-shadow: 0 0 0 2px rgba(87, 90, 255, 0.2);
+  }
+}
+
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 20px;
+  color: #666;
+
+  &:hover .eye-icon {
+    transform: scale(1.1);
+  }
+}
+
+.eye-icon {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  width: 100%;
+}
+
+.login-button {
+  background-color: #575aff;
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s;
+
+  &:hover:not(:disabled) {
+    background-color: #4a4df0;
+  }
+
+  &:disabled {
+    background-color: #a0a0a0;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+}
+
+@media (max-width: 768px) {
+  .faculty-title {
+    font-size: 1.5rem;
+  }
+
+  .login-card {
+    width: 90%;
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .faculty-title {
+    font-size: 1.2rem;
+  }
+
+  .login-card {
+    padding: 12px;
+  }
+
+  .card-header h3 {
+    font-size: 1.3rem;
+  }
+
+  .form-input {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .login-button {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+.eye-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  position: relative;
+}
+
+.eye-icon::before {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #666;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+}
+
+.eye-icon::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #666;
+  border-radius: 50%;
+  top: 6px;
+  left: 6px;
+}
+
+.eye-icon.hide::before {
+  border-color: transparent;
+  background: #666;
+}
+
+.eye-icon.hide::after {
+  display: none;
+}

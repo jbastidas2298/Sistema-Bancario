@@ -1,0 +1,143 @@
+<div class="container">
+  
+  <div class="header">
+    <h2>Gestión de Cuentas</h2>
+    <button class="btn btn-primary" (click)="showCreateForm()" *ngIf="!showForm">
+      Nueva Cuenta
+    </button>
+    <button class="btn btn-back" (click)="cancelForm()" *ngIf="showForm">
+      ← Volver
+    </button>
+  </div>
+
+  <div class="card" *ngIf="showForm">
+    <div class="card-header">
+      <h3>{{ editing ? 'Editar Cuenta' : 'Nueva Cuenta' }}</h3>
+    </div>
+    
+    <div class="card-body">
+      <form (ngSubmit)="onSubmit()" class="account-form">
+        
+        <div class="form-group">
+          <label>Número de Cuenta</label>
+          <input type="text" [(ngModel)]="currentAccount.accountNumber" name="accountNumber" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label>Tipo de Cuenta</label>
+          <select [(ngModel)]="currentAccount.accountType" name="accountType" class="form-control" required>
+            <option *ngFor="let type of accountTypes" [value]="type.value">
+              {{type.label}}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group" *ngIf="!editing">
+          <label>Saldo Inicial</label>
+          <div class="input-with-prefix">
+            <span class="input-prefix">$</span>
+            <input type="number" [(ngModel)]="currentAccount.initialBalance" 
+                   name="initialBalance" min="0" step="0.01" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Cliente</label>
+          <select [(ngModel)]="currentAccount.client.id" name="clientId" class="form-control" required>
+            <option *ngFor="let client of clients" [value]="client.id">
+              {{client.name}} ({{client.identification}})
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Estado</label>
+          <select [(ngModel)]="currentAccount.status" name="status" class="form-control" required>
+            <option [value]="true">Activa</option>
+            <option [value]="false">Inactiva</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="cancelForm()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+            {{ editing ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div *ngIf="!showForm" class="filters">
+    <input type="text" [(ngModel)]="searchTerm" (keyup)="applyFilter()" 
+           placeholder="Número de cuenta, cliente..." class="search-input">
+
+    <select [(ngModel)]="statusFilter" (change)="applyFilter()" class="filter-select">
+      <option value="">Todos</option>
+      <option value="true">Activas</option>
+      <option value="false">Inactivas</option>
+    </select>
+
+    <button class="btn btn-refresh" (click)="loadAccounts()">
+      Actualizar
+    </button>
+  </div>
+
+  <div *ngIf="!showForm">
+    <div *ngIf="isLoading" class="loading">
+      <div class="spinner"></div>
+      <p>Cargando cuentas...</p>
+    </div>
+
+    <div *ngIf="!isLoading && filteredAccounts.length === 0" class="empty-state">
+      <p>No se encontraron cuentas</p>
+    </div>
+
+    <div *ngIf="!isLoading && filteredAccounts.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Tipo</th>
+            <th>Cliente</th>
+            <th>Saldo</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let account of filteredAccounts">
+            <td>{{account.accountNumber}}</td>
+            <td>{{getAccountTypeLabel(account.accountType)}}</td>
+            <td>
+              {{account.client.name}}<br>
+              <small>{{account.client.identification}}</small>
+            </td>
+            <td>
+              <strong>{{formatCurrency(account.currentBalance || account.initialBalance)}}</strong>
+            </td>
+            <td>
+              <span class="badge" [class.badge-active]="account.status" [class.badge-inactive]="!account.status">
+                {{account.status ? 'Activa' : 'Inactiva'}}
+              </span>
+            </td>
+            <td class="actions">
+              <button class="btn-icon btn-edit" (click)="showEditForm(account)" title="Editar">
+                Editar
+              </button>
+              <button class="btn-icon" [class.btn-deactivate]="account.status" [class.btn-activate]="!account.status" 
+                      (click)="toggleAccountStatus(account)" [title]="account.status ? 'Desactivar' : 'Activar'">
+                {{account.status ? 'Desactivar' : 'Activar'}}
+              </button>
+              <button class="btn-icon btn-delete" (click)="deleteAccount(account.id!, account.accountNumber)" title="Eliminar">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

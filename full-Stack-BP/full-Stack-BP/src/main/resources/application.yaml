@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: full-Stack-BP
+  datasource:
+    url: jdbc:sqlserver://${DB_HOST}:1433;databaseName=bd_transaction;encrypt=true;trustServerCertificate=true
+    username: sa
+    password: Alt!ora2015
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.SQLServerDialect
+        default_schema: dbo
+
+server:
+  port: 8098
+
+logging:
+  level:
+    com.example.fullstackbp: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metric
+jwt:
+  secret: $2a$10$vl2reM1tzZoGoMwRxymMneiNjyUqWiCdT4.fFMZbL2nFZNSZo8csy
+  expiration: 86400000
+cors:
+  allowed-origins: "http://localhost:4200"

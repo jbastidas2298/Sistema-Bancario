@@ -1,0 +1,7 @@
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+/full-stack-bp-frontend/node_modules
+/full-stack-bp-frontend/dist
+/full-stack-bp-frontend/tmp
+/full-stack-bp-frontend/out-tsc
+/full-stack-bp-frontend/.angular
+/full-stack-bp-frontend/coverage

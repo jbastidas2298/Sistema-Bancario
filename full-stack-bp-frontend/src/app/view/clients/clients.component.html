@@ -1,0 +1,170 @@
+<div class="container">
+
+  <div class="header">
+    <h2>Gestión de Clientes</h2>
+    <button class="btn btn-primary" (click)="showCreateForm()" *ngIf="!showForm">
+      Nuevo Cliente
+    </button>
+    <button class="btn btn-back" (click)="cancelForm()" *ngIf="showForm">
+      ← Volver
+    </button>
+  </div>
+
+  <div class="card" *ngIf="showForm">
+    <div class="card-header">
+      <h3>{{ editing ? 'Editar Cliente' : 'Nuevo Cliente' }}</h3>
+    </div>
+
+    <div class="card-body">
+      <form (ngSubmit)="onSubmit()" class="client-form">
+
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" [(ngModel)]="currentClient.name" name="name" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label>Identificación</label>
+          <input type="text" [(ngModel)]="currentClient.identification" name="identification" class="form-control"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label>Edad</label>
+          <input type="number" [(ngModel)]="currentClient.age" name="age" min="18" max="120" class="form-control"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label>Género</label>
+          <select [(ngModel)]="currentClient.gender" name="gender" class="form-control" required>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+            <option value="O">Otro</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" [(ngModel)]="currentClient.phone" name="phone" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" [(ngModel)]="currentClient.password" name="password" class="form-control" required>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Dirección</label>
+          <textarea [(ngModel)]="currentClient.address" name="address" rows="2" class="form-control"
+            required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Estado</label>
+          <select [(ngModel)]="currentClient.status" name="status" class="form-control" required>
+            <option [value]="true">Activo</option>
+            <option [value]="false">Inactivo</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="cancelForm()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+            {{ editing ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div *ngIf="!showForm" class="filters">
+    <div class="search-container">
+      <input type="text" [(ngModel)]="searchTerm" (keyup)="applyFilter()"
+        placeholder="Nombre, identificación o teléfono..." class="search-input">
+    </div>
+
+    <div class="filter-container">
+      <select [(ngModel)]="statusFilter" (change)="applyFilter()" class="filter-select">
+        <option value="">Todos</option>
+        <option value="true">Activos</option>
+        <option value="false">Inactivos</option>
+      </select>
+    </div>
+
+    <button class="btn btn-refresh" (click)="loadClients()">
+      Actualizar
+    </button>
+  </div>
+
+  <div *ngIf="!showForm">
+    <div *ngIf="isLoading" class="loading">
+      <div class="spinner"></div>
+      <p>Cargando clientes...</p>
+    </div>
+
+    <div *ngIf="!isLoading && filteredClients.length === 0" class="empty-state">
+      <p>No se encontraron clientes</p>
+    </div>
+
+    <div *ngIf="!isLoading && filteredClients.length > 0">
+      <div class="pagination-info">
+        Mostrando {{paginatedClients.length}} de {{totalClients}} clientes
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Identificación</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let client of paginatedClients">
+            <td>{{client.id}}</td>
+            <td>{{client.name}}</td>
+            <td>{{client.identification}}</td>
+            <td>{{formatPhone(client.phone)}}</td>
+            <td>
+              <span class="badge" [class.badge-active]="client.status" [class.badge-inactive]="!client.status">
+                {{client.status ? 'Activo' : 'Inactivo'}}
+              </span>
+            </td>
+            <td class="actions">
+              <button class="btn-icon btn-edit" (click)="showEditForm(client)" title="Editar">
+                Editar
+              </button>
+              <button class="btn-icon" [class.btn-deactivate]="client.status" [class.btn-activate]="!client.status"
+                (click)="toggleClientStatus(client)" [title]="client.status ? 'Desactivar' : 'Activar'">
+                {{client.status ? 'Desactivar' : 'Activar'}}
+              </button>
+              <button class="btn-icon btn-delete" (click)="deleteClient(client.id!, client.name)" title="Eliminar">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="pagination" *ngIf="filteredClients.length > 0">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0">
+          ← Anterior
+        </button>
+
+        <span class="page-info">
+          Página {{currentPage + 1}} de {{totalPages}}
+        </span>
+
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1">
+          Siguiente →
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

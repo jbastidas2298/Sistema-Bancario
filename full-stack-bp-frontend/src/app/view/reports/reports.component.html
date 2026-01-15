@@ -1,0 +1,258 @@
+<div class="container">
+  
+  <div class="header">
+    <h2>Reportes y Estados de Cuenta</h2>
+  </div>
+
+  <div class="filters-card">
+    <div class="card-header">
+      <h3>Generar Reporte</h3>
+    </div>
+    
+    <div class="card-body">
+      <div class="filters-grid">
+        <div class="form-group">
+          <label>Cliente</label>
+          <select [(ngModel)]="selectedClientId" class="form-control" required>
+            <option *ngFor="let client of clients" [value]="client.id">
+              {{client.name}} ({{client.identification}})
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Fecha de Inicio</label>
+          <input type="date" [(ngModel)]="startDate" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label>Fecha de Fin</label>
+          <input type="date" [(ngModel)]="endDate" class="form-control" required>
+        </div>
+
+        <div class="action-buttons">
+          <button class="btn btn-primary" (click)="generateReport()" [disabled]="isLoading">
+            Generar Reporte
+          </button>
+
+          <button class="btn btn-accent" (click)="generatePdfReport()"
+            [disabled]="isGeneratingPdf || !selectedClientId">
+            Descargar PDF
+          </button>
+
+          <button class="btn btn-primary" (click)="previewPdfReport()"
+            [disabled]="isPreviewingPdf || !selectedClientId">
+            Vista Previa
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner"></div>
+    <p>Generando reporte...</p>
+  </div>
+
+  <div *ngIf="report && !isLoading">
+    
+    <div class="report-header">
+      <div class="header-content">
+        <div>
+          <h3>Estado de Cuenta</h3>
+          <p><strong>Cliente:</strong> {{report.clientName}}</p>
+          <p><strong>Identificación:</strong> {{report.clientIdentification}}</p>
+          <p><strong>Período:</strong> {{formatDate(report.startDate)}} - {{formatDate(report.endDate)}}</p>
+        </div>
+        <div class="report-actions">
+          <button class="btn-toggle" (click)="showAccounts = !showAccounts">
+            {{showAccounts ? 'Ocultar' : 'Mostrar'}} Cuentas
+          </button>
+          <button class="btn-toggle" (click)="showTransactions = !showTransactions">
+            {{showTransactions ? 'Ocultar' : 'Mostrar'}} Transacciones
+          </button>
+          <button class="btn-toggle" (click)="showSummary = !showSummary">
+            {{showSummary ? 'Ocultar' : 'Mostrar'}} Resumen
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="showSummary" class="summary-card">
+      <div class="card-header">
+        <h4>Resumen General</h4>
+      </div>
+      
+      <div class="card-body">
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="summary-label">Total Depósitos:</span>
+            <span class="summary-value amount-positive">
+              {{formatCurrency(report.totalDeposits)}}
+            </span>
+          </div>
+
+          <div class="summary-item">
+            <span class="summary-label">Total Retiros:</span>
+            <span class="summary-value amount-negative">
+              {{formatCurrency(report.totalWithdrawals)}}
+            </span>
+          </div>
+
+          <div class="summary-item">
+            <span class="summary-label">Total Transferencias:</span>
+            <span class="summary-value amount-transfer">
+              {{formatCurrency(report.totalTransfers)}}
+            </span>
+          </div>
+
+          <div class="summary-item">
+            <span class="summary-label">Número de Cuentas:</span>
+            <span class="summary-value">
+              {{report.accounts.length}}
+            </span>
+          </div>
+
+          <div class="summary-item">
+            <span class="summary-label">Total Transacciones:</span>
+            <span class="summary-value">
+              {{report.transactions.length}}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="showAccounts" class="accounts-card">
+      <div class="card-header">
+        <h4>Cuentas del Cliente</h4>
+      </div>
+      
+      <div class="card-body">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Tipo</th>
+              <th>Saldo Inicial</th>
+              <th>Saldo Actual</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let account of report.accounts">
+              <td>{{account.accountNumber}}</td>
+              <td>{{getAccountTypeLabel(account.accountType)}}</td>
+              <td>{{formatCurrency(account.initialBalance)}}</td>
+              <td><strong>{{formatCurrency(account.currentBalance)}}</strong></td>
+              <td>
+                <span class="badge" [class.badge-active]="account.status" [class.badge-inactive]="!account.status">
+                  {{getStatusLabel(account.status)}}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div *ngIf="showTransactions" class="transactions-card">
+      <div class="card-header">
+        <h4>Transacciones del Período</h4>
+      </div>
+      
+      <div class="card-body">
+        <div class="transaction-filters">
+          <div class="form-group">
+            <label>Tipo de Transacción</label>
+            <select [(ngModel)]="transactionTypeFilter" class="form-control">
+              <option value="">Todos</option>
+              <option value="DEPOSIT">Depósitos</option>
+              <option value="WITHDRAWAL">Retiros</option>
+              <option value="TRANSFER">Transferencias</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Filtrar por Cuenta</label>
+            <select [(ngModel)]="accountFilter" class="form-control">
+              <option value="">Todas</option>
+              <option *ngFor="let accountNumber of accountNumbers" [value]="accountNumber">
+                {{accountNumber}}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div *ngIf="filteredTransactions.length > 0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha y Hora</th>
+                <th>Tipo</th>
+                <th>Cuenta</th>
+                <th>Monto</th>
+                <th>Saldo</th>
+                <th>Descripción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let transaction of filteredTransactions">
+                <td>{{formatDateTime(transaction.date)}}</td>
+                <td>
+                  <span class="badge" [ngClass]="getTransactionTypeClass(transaction.transactionType)">
+                    {{getTransactionTypeLabel(transaction.transactionType)}}
+                  </span>
+                </td>
+                <td>{{transaction.accountNumber}}</td>
+                <td>
+                  <span [ngClass]="getAmountClass(transaction.transactionType)">
+                    {{formatCurrency(transaction.amount)}}
+                  </span>
+                </td>
+                <td>{{formatCurrency(transaction.balance)}}</td>
+                <td>{{transaction.description}}
+                  <span *ngIf="transaction.destinationAccountNumber" class="destination-info">
+                    → Cuenta destino: {{transaction.destinationAccountNumber}}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="transaction-count">
+            Mostrando {{filteredTransactions.length}} de {{report.transactions.length}} transacciones
+          </div>
+        </div>
+
+        <div *ngIf="filteredTransactions.length === 0" class="empty-transactions">
+          <p>No se encontraron transacciones con los filtros aplicados</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!report && !isLoading" class="empty-report">
+    <p>Seleccione un cliente y un rango de fechas para generar un reporte</p>
+  </div>
+</div>
+
+<div *ngIf="pdfPreviewUrl" class="pdf-preview-overlay">
+  <div class="pdf-preview-container">
+    <div class="pdf-preview-header">
+      <h3>Vista Previa del Reporte PDF</h3>
+      <button class="btn-close" (click)="closePreview()">×</button>
+    </div>
+    <div class="pdf-preview-content">
+      <iframe [src]="pdfPreviewUrl" width="100%" height="600px"></iframe>
+    </div>
+    <div class="pdf-preview-footer">
+      <button class="btn btn-primary" (click)="generatePdfReport()">
+        Descargar PDF
+      </button>
+      <button class="btn btn-secondary" (click)="closePreview()">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>
